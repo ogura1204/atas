@@ -1,4 +1,9 @@
-// BaseStage.js 内の setupStage を修正
+import Player from '../classes/Player.js';
+import Enemy from '../classes/Enemy.js';
+
+export default class BaseStage extends Phaser.Scene {
+    constructor(key) { super(key); }
+
     setupStage(config) {
         const uiLayer = document.getElementById('ui-layer');
         if (uiLayer) uiLayer.style.display = 'block';
@@ -9,6 +14,7 @@
         }
 
         this.physics.world.setBounds(0, 0, config.stageWidth, 720);
+
         this.bgBack = this.add.tileSprite(0, 360, config.stageWidth, 720, config.bgBack).setScrollFactor(0.1);
         this.bgMid = this.add.tileSprite(0, 360, config.stageWidth, 720, config.bgMid).setScrollFactor(0.4);
         
@@ -18,7 +24,6 @@
         });
 
         this.platforms = this.physics.add.staticGroup();
-        // ★ダメージを受けるトゲなどのギミック（hazard）用のグループ
         this.hazards = this.physics.add.staticGroup();
 
         config.platformsData.forEach(p => {
@@ -37,12 +42,10 @@
         this.cameras.main.setBounds(0, 0, config.stageWidth, 720);
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
-        // ★敵の弾グループを作成
         this.enemyBullets = this.physics.add.group({ defaultKey: 'bullet', maxSize: 100 });
 
         this.allEnemies = this.physics.add.group();
         config.enemiesData.forEach(e => {
-            // ★ AIタイプ（e.type）をEnemyクラスに渡す
             this.allEnemies.add(new Enemy(this, e.x, e.y, e.key, e.hp, e.speed, e.type));
         });
 
@@ -71,7 +74,6 @@
         this.setupCollisions();
     }
 
-    // BaseStage.js 内の setupCollisions を修正
     setupCollisions() {
         this.physics.add.overlap(this.player.bullets, this.allEnemies, (b, e) => {
             if (b.active && e.active) { 
@@ -90,16 +92,14 @@
         this.physics.add.collider(this.player.bullets, this.platforms, (b) => { b.setActive(false).setVisible(false); });
         this.physics.add.collider(this.enemyBullets, this.platforms, (b) => { b.setActive(false).setVisible(false); });
         
-        // ★敵本体との接触ダメージ
         this.physics.add.collider(this.player, this.allEnemies, (player, enemy) => {
             if (!player.isInvincible && !player.isSpinning && !player.isDashing) {
                 player.takeDamage(1); 
-                player.setVelocityY(-400); // 弾き飛ばされる
+                player.setVelocityY(-400); 
                 player.setVelocityX(player.x < enemy.x ? -300 : 300);
             }
         });
 
-        // ★敵の弾との接触ダメージ
         this.physics.add.overlap(this.player, this.enemyBullets, (player, bullet) => {
             if (!player.isInvincible && !player.isSpinning && !player.isDashing && bullet.active) {
                 player.takeDamage(1);
@@ -107,10 +107,9 @@
             }
         });
 
-        // ★ギミック（トゲや溶岩など）との接触ダメージ
         this.physics.add.collider(this.player, this.hazards, (player, hazard) => {
             if (!player.isInvincible) {
-                player.takeDamage(2); // ギミックは痛い
+                player.takeDamage(2);
                 player.setVelocityY(-600); 
             }
         });
@@ -136,3 +135,51 @@
             }
         });
     }
+
+    startBossDialogue(dialogues) {
+        this.isDialogueActive = true;
+        this.player.isLocked = true; 
+        this.currentDialogues = dialogues;
+        this.dialogueIndex = 0;
+
+        this.dialogueBg = this.add.graphics().setScrollFactor(0);
+        this.dialogueBg.fillStyle(0x000000, 0.8).lineStyle(2, 0x00ffff);
+        this.dialogueBg.fillRect(240, 550, 800, 100).strokeRect(240, 550, 800, 100);
+        
+        this.dialogueText = this.add.text(280, 580, this.currentDialogues[0], { fontSize: '20px', fill: '#fff' }).setScrollFactor(0);
+        
+        this.input.on('pointerdown', this.advanceDialogue, this);
+        this.input.keyboard.on('keydown-SPACE', this.advanceDialogue, this);
+        this.input.keyboard.on('keydown-ENTER', this.advanceDialogue, this);
+        this.input.keyboard.on('keydown-X', this.advanceDialogue, this);
+    }
+
+    advanceDialogue() {
+        if (!this.isDialogueActive) return;
+        this.dialogueIndex++;
+        if (this.dialogueIndex < this.currentDialogues.length) {
+            this.dialogueText.setText(this.currentDialogues[this.dialogueIndex]);
+        } else {
+            this.isDialogueActive = false;
+            this.dialogueBg.destroy();
+            this.dialogueText.destroy();
+            
+            this.input.off('pointerdown', this.advanceDialogue, this);
+            this.input.keyboard.off('keydown-SPACE', this.advanceDialogue, this);
+            this.input.keyboard.off('keydown-ENTER', this.advanceDialogue, this);
+            this.input.keyboard.off('keydown-X', this.advanceDialogue, this);
+            
+            this.player.isLocked = false;
+            this.boss.setActive(true).setVisible(true);
+            this.player.showNavMessage("戦闘開始！");
+        }
+    }
+
+    update(time) {
+        if (this.player) this.player.update(time);
+        if (this.allEnemies) this.allEnemies.getChildren().forEach(e => { if (e.active) e.update(); });
+        
+        if (this.bgBack) this.bgBack.tilePositionX = this.cameras.main.scrollX * 0.1;
+        if (this.bgMid) this.bgMid.tilePositionX = this.cameras.main.scrollX * 0.4;
+    }
+}

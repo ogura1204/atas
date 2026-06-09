@@ -54,6 +54,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.atasEffects = scene.physics.add.group();
 
         this.cursors = scene.input.keyboard.createCursorKeys();
+        
+        // ★ キーボードの追加（Z, X, C, Shift）
+        this.keyZ = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+        this.keyX = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+        this.keyC = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+        this.keyShift = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+
         this.uiKeys = { left: false, right: false, up: false, dash: false };
         
         this.clearAndBindDOM('btn-left', () => this.uiKeys.left = true, () => this.uiKeys.left = false);
@@ -180,12 +187,17 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     update(time) {
         if (this.isLocked || this.isSpinning) { this.setVelocityX(0); return; }
 
-        if (Phaser.Input.Keyboard.JustDown(this.cursors.space)) this.handleAttackDown();
-        if (Phaser.Input.Keyboard.JustUp(this.cursors.space)) this.handleAttackUp();
+        // ★キーボードの入力を判定（Space または Xキー）
+        if (Phaser.Input.Keyboard.JustDown(this.cursors.space) || Phaser.Input.Keyboard.JustDown(this.keyX)) this.handleAttackDown();
+        if (Phaser.Input.Keyboard.JustUp(this.cursors.space) || Phaser.Input.Keyboard.JustUp(this.keyX)) this.handleAttackUp();
+
+        // ★ダッシュのキーボード入力判定（C または Shiftキー）
+        if (Phaser.Input.Keyboard.JustDown(this.keyC) || Phaser.Input.Keyboard.JustDown(this.keyShift)) this.handleDash();
 
         let isLeft = this.cursors.left.isDown || this.uiKeys.left;
         let isRight = this.cursors.right.isDown || this.uiKeys.right;
-        let isUp = this.cursors.up.isDown || this.uiKeys.up;
+        // ★ジャンプの判定にZキーを追加
+        let isUp = this.cursors.up.isDown || this.keyZ.isDown || this.uiKeys.up;
 
         if (this.isDashing) {
             this.setVelocityX(this.facingRight ? this.dashSpeed : -this.dashSpeed);

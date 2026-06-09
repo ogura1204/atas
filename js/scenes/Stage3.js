@@ -1,14 +1,40 @@
 import BaseStage from './BaseStage.js';
+
 export default class Stage3 extends BaseStage {
     constructor() { super('Stage3'); }
+
     create() {
+        let groundData = [];
+        for (let i = 0; i < 15; i++) {
+            groundData.push({ x: 400 + (i * 600), y: 700, key: 'ground', scale: 1 });
+            // ★ ダメージを受けるトゲ（hazard）を配置
+            groundData.push({ x: 700 + (i * 600), y: 680, key: 'hazard', scale: 1 });
+            groundData.push({ x: 700 + (i * 600), y: 500, key: 'platform', scale: 0.5 });
+        }
+
+        let enemyData = [];
+        for (let i = 1; i < 20; i++) {
+            // shooter（遠距離から弾を撃ってくる敵）を配置
+            enemyData.push({ x: 400 * i, y: 600, key: 'enemy_base', hp: 5, speed: 80, type: 'shooter' });
+        }
+
         this.setupStage({
-            bgKey: 'bg3', title: 'STAGE 3: 廃棄物処理プラント',
-            platformsData: [ { x: 400, y: 425, key: 'ground' }, { x: 150, y: 300, key: 'platform' }, { x: 400, y: 200, key: 'platform' }, { x: 650, y: 100, key: 'platform' } ],
-            enemiesData: [ { x: 400, y: 100, key: 'enemy_base', hp: 3, speed: 50 }, { x: 400, y: 350, key: 'enemy_base', hp: 3, speed: 50 }, { x: 700, y: 350, key: 'enemy_base', hp: 3, speed: 50 } ],
-            bossData: { x: 650, y: 50, key: 'boss3', hp: 50, speed: 30 },
-            triggerX: 600,
-            dialogues: [ "ナビ：周囲の重力場に異常な偏りを確認。", "ナビ：廃棄物圧縮機「グラビティ・コンパクター」です。", "ナビ：この階層（Tier 1）最後のバグです。解体し、コードを抽出してください！" ],
+            stageWidth: 8000, 
+            bgBack: 'bg3_back', 
+            bgMid: 'bg3_mid',
+            title: 'STAGE 3: 廃棄物処理プラント (重力異常区画)',
+            platformsData: groundData,
+            enemiesData: enemyData,
+            
+            // ★ 超大型ボス（boss3）。動かず大量の弾を乱射する
+            bossData: { x: 7600, y: 400, key: 'boss3', hp: 800, speed: 0, type: 'boss3' },
+            triggerX: 6500,
+            
+            dialogues: [
+                "ナビ：周囲の重力場に異常な偏りを確認。",
+                "ナビ：超巨大廃棄物圧縮機「グラビティ・コンパクター」です。",
+                "ナビ：弾幕が濃いです。ATASの「シールド展開」を活用して防いでください！"
+            ],
             epilogueData: { stageId: 3, bossName: "グラビティ・コンパクター", reward: "【属性パーツ：重力】" }
         });
     }

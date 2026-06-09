@@ -8,6 +8,9 @@ export default class EpilogueScene extends Phaser.Scene {
     }
 
     create() {
+        // ★UIレイヤーを非表示にする
+        document.getElementById('ui-layer').style.display = 'none';
+
         this.cameras.main.setBackgroundColor('#001122');
         
         if (this.stageId > 0) {
@@ -27,12 +30,16 @@ export default class EpilogueScene extends Phaser.Scene {
         this.currentIndex = 0;
 
         this.messageText = this.add.text(400, 225, this.texts[this.currentIndex], { fontSize: '18px', fill: '#fff', align: 'center' }).setOrigin(0.5);
-        this.add.text(400, 400, "[画面をタップしてラボへ帰還]", { fontSize: '14px', fill: '#aaa' }).setOrigin(0.5);
+        this.add.text(400, 400, "[画面をクリック、または Space / Enter キーで帰還]", { fontSize: '14px', fill: '#aaa' }).setOrigin(0.5);
 
-        this.input.on('pointerdown', () => {
+        const advance = () => {
             this.currentIndex++;
             if (this.currentIndex < this.texts.length) { this.messageText.setText(this.texts[this.currentIndex]); } 
             else { this.scene.start('LabScene'); }
-        });
+        };
+
+        this.input.on('pointerdown', advance);
+        this.input.keyboard.on('keydown-SPACE', advance);
+        this.input.keyboard.on('keydown-ENTER', advance);
     }
 }

@@ -1,9 +1,9 @@
 import Player from '../classes/Player.js';
 
 const ATAS_MASTER = {
-    timings: { 't_hp50': '体力が半分以下の時', 't_heavy': 'ヘビー発射時', 't_jump': 'ジャンプ時' },
-    attributes: { 'a_heal': '回復（修復コード）', 'a_fire': '炎（継続ダメージ）', 'a_gravity': '重力（行動遅延）' },
-    actions: { 'ac_spin': 'その場で回転して発動', 'ac_bullet': '属性弾に変更し発射', 'ac_shield': '属性に応じたシールドを展開' }
+    timings: { 't_hp50': '体力低下', 't_heavy': '重射撃時', 't_jump': '跳躍時' },
+    attributes: { 'a_heal': '修復', 'a_fire': '炎上', 'a_gravity': '重力' },
+    actions: { 'ac_spin': '回転展開', 'ac_bullet': '属性弾', 'ac_shield': '防壁' }
 };
 
 export default class LabScene extends Phaser.Scene {
@@ -11,7 +11,8 @@ export default class LabScene extends Phaser.Scene {
 
     create() {
         // ★UIレイヤーを再び表示させる
-        document.getElementById('ui-layer').style.display = 'block';
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) uiLayer.style.display = 'block';
 
         if(window.SM) window.SM.stopBGM();
 
@@ -37,7 +38,7 @@ export default class LabScene extends Phaser.Scene {
         this.player.inLab = true;
         this.physics.add.collider(this.player, this.platforms);
 
-        this.promptText = this.add.text(400, 150, 'Shotボタンでアクセス', { fontSize: '18px', fill: '#ffff00', fontStyle: 'bold' }).setOrigin(0.5);
+        this.promptText = this.add.text(400, 150, 'Shot(Xキー)でアクセス', { fontSize: '18px', fill: '#ffff00', fontStyle: 'bold' }).setOrigin(0.5);
         this.promptText.setVisible(false);
         this.currentTarget = null;
         this.activeMenu = null;

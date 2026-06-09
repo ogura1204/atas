@@ -115,7 +115,11 @@ export default class BaseStage extends Phaser.Scene {
         this.dialogueBg.fillRect(100, 300, 600, 80).strokeRect(100, 300, 600, 80);
         
         this.dialogueText = this.add.text(120, 320, this.currentDialogues[0], { fontSize: '16px', fill: '#fff' });
+        
+        // ★キーボードでも会話を送れるように追加
         this.input.on('pointerdown', this.advanceDialogue, this);
+        this.input.keyboard.on('keydown-SPACE', this.advanceDialogue, this);
+        this.input.keyboard.on('keydown-ENTER', this.advanceDialogue, this);
     }
 
     advanceDialogue() {
@@ -127,7 +131,11 @@ export default class BaseStage extends Phaser.Scene {
             this.isDialogueActive = false;
             this.dialogueBg.destroy();
             this.dialogueText.destroy();
+            
+            // ★イベント解除
             this.input.off('pointerdown', this.advanceDialogue, this);
+            this.input.keyboard.off('keydown-SPACE', this.advanceDialogue, this);
+            this.input.keyboard.off('keydown-ENTER', this.advanceDialogue, this);
             
             this.player.isLocked = false;
             this.boss.setActive(true).setVisible(true);

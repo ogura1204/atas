@@ -20,11 +20,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.dashSpeed = 600;
         this.dashCooldown = 0;
 
-        this.particles = scene.add.particles('particle');
-        this.dustEmitter = this.particles.createEmitter({
+        // ★ 修正：Phaser3.60対応のパーティクル生成構文
+        this.dustEmitter = scene.add.particles(0, 0, 'particle', {
             speed: { min: -50, max: 50 }, angle: { min: 250, max: 290 },
             scale: { start: 1, end: 0 }, alpha: { start: 0.5, end: 0 },
-            lifespan: 300, gravityY: -50, on: false 
+            lifespan: 300, gravityY: -50, emitting: false 
         });
 
         this.eqTiming = scene.registry.get('eq_timing') || 't_hp50';
@@ -54,8 +54,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.atasEffects = scene.physics.add.group();
 
         this.cursors = scene.input.keyboard.createCursorKeys();
-        
-        // ★ キーボードの追加（Z, X, C, Shift）
         this.keyZ = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
         this.keyX = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
         this.keyC = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
@@ -91,7 +89,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.isLocked || this.isSpinning || this.inLab || this.isDashing || this.scene.time.now < this.dashCooldown) return;
         this.isDashing = true;
         this.isInvincible = true; 
-        window.SM.playDash(); 
+        if(window.SM) window.SM.playDash(); 
         
         let afterimageTimer = this.scene.time.addEvent({
             delay: 50, repeat: 4,
@@ -131,7 +129,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     executeATAS() {
-        window.SM.playATAS(); 
+        if(window.SM) window.SM.playATAS(); 
         this.flashATASUI();   
 
         let attrKey = 'eff_heal';
@@ -187,16 +185,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     update(time) {
         if (this.isLocked || this.isSpinning) { this.setVelocityX(0); return; }
 
-        // ★キーボードの入力を判定（Space または Xキー）
         if (Phaser.Input.Keyboard.JustDown(this.cursors.space) || Phaser.Input.Keyboard.JustDown(this.keyX)) this.handleAttackDown();
         if (Phaser.Input.Keyboard.JustUp(this.cursors.space) || Phaser.Input.Keyboard.JustUp(this.keyX)) this.handleAttackUp();
 
-        // ★ダッシュのキーボード入力判定（C または Shiftキー）
         if (Phaser.Input.Keyboard.JustDown(this.keyC) || Phaser.Input.Keyboard.JustDown(this.keyShift)) this.handleDash();
 
         let isLeft = this.cursors.left.isDown || this.uiKeys.left;
         let isRight = this.cursors.right.isDown || this.uiKeys.right;
-        // ★ジャンプの判定にZキーを追加
         let isUp = this.cursors.up.isDown || this.keyZ.isDown || this.uiKeys.up;
 
         if (this.isDashing) {
@@ -210,7 +205,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
         if (isUp && this.body.touching.down && !this.isDashing) { 
             this.setVelocityY(this.jumpPower); 
-            window.SM.playJump(); 
+            if(window.SM) window.SM.playJump(); 
             this.dustEmitter.explode(10, this.x, this.y + 20); 
             if (this.eqTiming === 't_jump') this.tryTriggerATAS();
         }
@@ -248,16 +243,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     tryFireRapid() {
         if (this.gauge >= 1) { 
             this.gauge -= 1; this.fireBullet('rapid'); this.updateGaugeUI(); 
-            window.SM.playRapid();
+            if(window.SM) window.SM.playRapid();
         } else { this.emptyClick(); }
     }
 
     tryFireHeavy() {
         if (this.gauge >= 5) { 
             this.gauge -= 5; this.fireBullet('heavy'); this.updateGaugeUI(); 
-            window.SM.playHeavy();
+            if(window.SM) window.SM.playHeavy();
             if (this.eqTiming === 't_heavy') this.tryTriggerATAS();
-        } else { this.emptyClick(); window.SM.playEmpty(); }
+        } else { this.emptyClick(); if(window.SM) window.SM.playEmpty(); }
     }
 
     emptyClick() {

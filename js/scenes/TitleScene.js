@@ -1,20 +1,31 @@
 export default class TitleScene extends Phaser.Scene {
     constructor() { super('TitleScene'); }
+
     create() {
-        // ★UIレイヤーを非表示にする
-        document.getElementById('ui-layer').style.display = 'none';
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) uiLayer.style.display = 'none';
 
         this.cameras.main.setBackgroundColor('#000000');
         this.add.text(400, 150, "パッチワーク・ワールドの修復師", { fontSize: '36px', fill: '#00ffff', fontStyle: 'bold' }).setOrigin(0.5);
         const saveRaw = localStorage.getItem('patchwork_save');
 
         this.createButton(400, 250, "NEW GAME", () => {
+            // ★ボタンを押した瞬間に、ブラウザの音声ブロックを強制解除する
+            if (window.SM && window.SM.ctx && window.SM.ctx.state === 'suspended') {
+                window.SM.ctx.resume();
+            }
+
             this.registry.set('clearedStages', []);
             this.scene.start('PrologueScene');
         });
 
         if (saveRaw) {
             this.createButton(400, 320, "CONTINUE", () => {
+                // ★コンティニュー時も同様に解除
+                if (window.SM && window.SM.ctx && window.SM.ctx.state === 'suspended') {
+                    window.SM.ctx.resume();
+                }
+
                 const saveData = JSON.parse(saveRaw);
                 this.registry.set('clearedStages', saveData.clearedStages || []);
                 this.registry.set('eq_timing', saveData.eq_timing);
@@ -27,6 +38,7 @@ export default class TitleScene extends Phaser.Scene {
             }, 0x008800); 
         }
     }
+
     createButton(x, y, text, callback, color = 0x336699) {
         let btnBg = this.add.rectangle(x, y, 300, 50, color).setInteractive();
         let btnText = this.add.text(x, y, text, { fontSize: '18px', fill: '#fff', fontStyle: 'bold' }).setOrigin(0.5);

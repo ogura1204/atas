@@ -6,7 +6,8 @@ export default class BaseStage extends Phaser.Scene {
 
     setupStage(config) {
         // ★UIレイヤーを表示させる
-        document.getElementById('ui-layer').style.display = 'block';
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) uiLayer.style.display = 'block';
 
         window.SM.playStageBGM(config.epilogueData.stageId);
 
@@ -116,7 +117,7 @@ export default class BaseStage extends Phaser.Scene {
         
         this.dialogueText = this.add.text(120, 320, this.currentDialogues[0], { fontSize: '16px', fill: '#fff' });
         
-        // ★キーボードでも会話を送れるように追加
+        // ★クリックに加え、Space/Enterキーでも進行可能に
         this.input.on('pointerdown', this.advanceDialogue, this);
         this.input.keyboard.on('keydown-SPACE', this.advanceDialogue, this);
         this.input.keyboard.on('keydown-ENTER', this.advanceDialogue, this);

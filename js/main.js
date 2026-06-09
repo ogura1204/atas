@@ -14,7 +14,8 @@ const config = {
     width: 1280, 
     height: 720,
     physics: { default: 'arcade', arcade: { gravity: { y: 2500 }, debug: false } },
-    render: { antialias: true, pixelArt: false },
+    // ★ ドット絵をクッキリ表示する最高画質設定（アンチエイリアスOFF、ピクセルアートON）
+    render: { antialias: false, pixelArt: true },
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
     scene: [BootScene, TitleScene, PrologueScene, LabScene, Stage1, Stage2, Stage3, EpilogueScene]
 };

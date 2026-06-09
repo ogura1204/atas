@@ -1,0 +1,42 @@
+* { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+body { background-color: #111; color: #fff; overflow: hidden; font-family: sans-serif; }
+
+#game-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
+#ui-layer { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10; pointer-events: none; }
+
+#top-ui { position: absolute; top: 10px; left: 10px; pointer-events: auto; }
+.gauge-bar { padding: 5px 10px; margin-bottom: 5px; font-weight: bold; font-size: 14px; border-radius: 4px; transition: 0.2s; }
+.hp-bar { background: rgba(0, 255, 0, 0.3); border: 1px solid lime; }
+.energy-bar { background: rgba(0, 150, 255, 0.3); border: 1px solid cyan; }
+
+#left-controls { position: absolute; bottom: 50px; left: 20px; pointer-events: auto; display: flex; align-items: flex-end;}
+#right-controls { position: absolute; bottom: 50px; right: 20px; pointer-events: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+button {
+    background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.5);
+    color: white; border-radius: 50%; font-weight: bold; width: 60px; height: 60px;
+}
+button:active { background: rgba(255, 255, 255, 0.6); }
+
+#nav-window {
+    position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+    width: 60%; background: rgba(0, 0, 0, 0.7); border: 1px solid #aaa;
+    padding: 8px 15px; border-radius: 5px; pointer-events: auto; text-align: center; font-size: 12px;
+}
+
+#atas-display {
+    position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: rgba(0, 50, 100, 0.8); border: 2px solid cyan;
+    padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold;
+    pointer-events: auto; display: flex; gap: 10px; transition: all 0.2s;
+}
+.atas-label { color: #aaa; font-size: 12px; }
+#atas-timing { color: #33cc33; }
+#atas-attribute { color: #cc3333; }
+#atas-action { color: #00aaff; }
+
+.atas-flash { animation: flashAnim 0.5s ease-out; }
+@keyframes flashAnim {
+    0% { background: #ffffff; box-shadow: 0 0 20px 10px cyan; transform: translateX(-50%) scale(1.1); }
+    100% { background: rgba(0, 50, 100, 0.8); box-shadow: none; transform: translateX(-50%) scale(1.0); }
+}

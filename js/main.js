@@ -1,3 +1,4 @@
+import './utils/SoundManager.js'; // ★ 音声プログラムを起動
 import BootScene from './scenes/BootScene.js';
 import TitleScene from './scenes/TitleScene.js';
 import PrologueScene from './scenes/PrologueScene.js';

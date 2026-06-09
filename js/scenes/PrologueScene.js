@@ -1,8 +1,10 @@
 export default class PrologueScene extends Phaser.Scene {
     constructor() { super('PrologueScene'); }
+
     create() {
         // ★UIレイヤーを非表示にする
-        document.getElementById('ui-layer').style.display = 'none';
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) uiLayer.style.display = 'none';
 
         this.cameras.main.setBackgroundColor('#000000');
         this.texts = [
@@ -17,11 +19,13 @@ export default class PrologueScene extends Phaser.Scene {
         this.messageText = this.add.text(400, 225, this.texts[this.currentIndex], { fontSize: '20px', fill: '#fff', align: 'center' }).setOrigin(0.5);
         this.add.text(400, 400, "[画面をクリック、または Space / Enter キーで進行]", { fontSize: '14px', fill: '#aaa' }).setOrigin(0.5);
 
-        // ★クリックとキーボード両方で進める関数
         const advance = () => {
             this.currentIndex++;
-            if (this.currentIndex < this.texts.length) { this.messageText.setText(this.texts[this.currentIndex]); } 
-            else { this.scene.start('LabScene'); }
+            if (this.currentIndex < this.texts.length) { 
+                this.messageText.setText(this.texts[this.currentIndex]); 
+            } else { 
+                this.scene.start('LabScene'); 
+            }
         };
 
         this.input.on('pointerdown', advance);

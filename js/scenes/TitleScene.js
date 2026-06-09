@@ -1,6 +1,9 @@
 export default class TitleScene extends Phaser.Scene {
     constructor() { super('TitleScene'); }
     create() {
+        // ★UIレイヤーを非表示にする
+        document.getElementById('ui-layer').style.display = 'none';
+
         this.cameras.main.setBackgroundColor('#000000');
         this.add.text(400, 150, "パッチワーク・ワールドの修復師", { fontSize: '36px', fill: '#00ffff', fontStyle: 'bold' }).setOrigin(0.5);
         const saveRaw = localStorage.getItem('patchwork_save');
@@ -14,7 +17,6 @@ export default class TitleScene extends Phaser.Scene {
             this.createButton(400, 320, "CONTINUE", () => {
                 const saveData = JSON.parse(saveRaw);
                 this.registry.set('clearedStages', saveData.clearedStages || []);
-                // 装備データも復元
                 this.registry.set('eq_timing', saveData.eq_timing);
                 this.registry.set('eq_attribute', saveData.eq_attribute);
                 this.registry.set('eq_action', saveData.eq_action);

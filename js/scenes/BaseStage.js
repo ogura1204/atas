@@ -5,17 +5,17 @@ export default class BaseStage extends Phaser.Scene {
     constructor(key) { super(key); }
 
     setupStage(config) {
-        // ★UIレイヤーを表示させる
         const uiLayer = document.getElementById('ui-layer');
         if (uiLayer) uiLayer.style.display = 'block';
 
-        window.SM.playStageBGM(config.epilogueData.stageId);
+        if(window.SM) window.SM.playStageBGM(config.epilogueData.stageId);
 
         this.add.image(400, 225, config.bgKey);
         
-        this.explosionEmitter = this.add.particles('particle_fire').createEmitter({
+        // ★ 修正：Phaser3.60対応のパーティクル生成構文
+        this.explosionEmitter = this.add.particles(0, 0, 'particle_fire', {
             speed: { min: 50, max: 200 }, scale: { start: 1.5, end: 0 },
-            alpha: { start: 1, end: 0 }, lifespan: 500, on: false
+            alpha: { start: 1, end: 0 }, lifespan: 500, emitting: false
         });
 
         this.platforms = this.physics.add.staticGroup();
@@ -48,7 +48,7 @@ export default class BaseStage extends Phaser.Scene {
         });
 
         this.events.on('bossDefeated', () => {
-            window.SM.stopBGM(); 
+            if(window.SM) window.SM.stopBGM(); 
             this.scene.start('EpilogueScene', config.epilogueData);
         });
 
@@ -63,10 +63,10 @@ export default class BaseStage extends Phaser.Scene {
                 e.takeDamage(d); 
                 
                 if (e.hp <= 0) {
-                    window.SM.playExplosion();
+                    if(window.SM) window.SM.playExplosion();
                     this.explosionEmitter.explode(30, e.x, e.y);
                 } else {
-                    window.SM.playSynth(300, 'square', 0.05, 0.2);
+                    if(window.SM) window.SM.playSynth(300, 'square', 0.05, 0.2);
                 }
             }
         });
@@ -117,7 +117,6 @@ export default class BaseStage extends Phaser.Scene {
         
         this.dialogueText = this.add.text(120, 320, this.currentDialogues[0], { fontSize: '16px', fill: '#fff' });
         
-        // ★クリックに加え、Space/Enterキーでも進行可能に
         this.input.on('pointerdown', this.advanceDialogue, this);
         this.input.keyboard.on('keydown-SPACE', this.advanceDialogue, this);
         this.input.keyboard.on('keydown-ENTER', this.advanceDialogue, this);
@@ -133,7 +132,6 @@ export default class BaseStage extends Phaser.Scene {
             this.dialogueBg.destroy();
             this.dialogueText.destroy();
             
-            // ★イベント解除
             this.input.off('pointerdown', this.advanceDialogue, this);
             this.input.keyboard.off('keydown-SPACE', this.advanceDialogue, this);
             this.input.keyboard.off('keydown-ENTER', this.advanceDialogue, this);

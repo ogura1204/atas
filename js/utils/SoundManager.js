@@ -1,26 +1,31 @@
 export default class SoundManager {
     constructor() {
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.value = 0.6;
-        this.compressor = this.ctx.createDynamicsCompressor();
-        this.masterGain.connect(this.compressor);
-        this.compressor.connect(this.ctx.destination);
+        try {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.gain.value = 0.6;
+            this.compressor = this.ctx.createDynamicsCompressor();
+            this.masterGain.connect(this.compressor);
+            this.compressor.connect(this.ctx.destination);
 
-        this.delay = this.ctx.createDelay();
-        this.delay.delayTime.value = 0.3; 
-        this.delayGain = this.ctx.createGain();
-        this.delayGain.gain.value = 0.3; 
-        this.delay.connect(this.delayGain);
-        this.delayGain.connect(this.delay); 
-        this.delayGain.connect(this.masterGain);
+            this.delay = this.ctx.createDelay();
+            this.delay.delayTime.value = 0.3; 
+            this.delayGain = this.ctx.createGain();
+            this.delayGain.gain.value = 0.3; 
+            this.delay.connect(this.delayGain);
+            this.delayGain.connect(this.delay); 
+            this.delayGain.connect(this.masterGain);
 
-        this.bgmTimer = null;
-        this.isPlayingBGM = false;
+            this.bgmTimer = null;
+            this.isPlayingBGM = false;
+        } catch (e) {
+            console.error("Web Audio APIがサポートされていません:", e);
+        }
     }
 
     playSynth(freq, type, duration, vol, useDelay = false) {
-        if (this.ctx.state === 'suspended') this.ctx.resume();
+        if (!this.ctx || this.ctx.state === 'suspended') return;
         let time = this.ctx.currentTime;
         let osc = this.ctx.createOscillator();
         let subOsc = this.ctx.createOscillator();
@@ -48,6 +53,7 @@ export default class SoundManager {
     }
 
     playKick(time) {
+        if (!this.ctx || this.ctx.state === 'suspended') return;
         let osc = this.ctx.createOscillator();
         let gain = this.ctx.createGain();
         osc.connect(gain); gain.connect(this.masterGain);
@@ -59,6 +65,7 @@ export default class SoundManager {
     }
 
     playBass(freq, time) {
+        if (!this.ctx || this.ctx.state === 'suspended') return;
         let osc = this.ctx.createOscillator();
         let gain = this.ctx.createGain();
         let filter = this.ctx.createBiquadFilter();
@@ -78,11 +85,12 @@ export default class SoundManager {
     playRapid() { this.playSynth(1200, 'square', 0.1, 0.1); }
     playHeavy() { this.playSynth(150, 'sawtooth', 0.3, 0.6); }
     playEmpty() { this.playSynth(100, 'square', 0.1, 0.3); }
-    playExplosion() { this.playKick(this.ctx.currentTime); this.playSynth(50, 'sawtooth', 0.8, 0.8, true); }
+    playExplosion() { if(this.ctx) this.playKick(this.ctx.currentTime); this.playSynth(50, 'sawtooth', 0.8, 0.8, true); }
     playATAS() { this.playSynth(880, 'sine', 0.3, 0.5, true); setTimeout(() => this.playSynth(1760, 'sine', 0.6, 0.5, true), 150); }
 
     playStageBGM(stageLevel) {
         this.stopBGM();
+        if (!this.ctx) return;
         if (this.ctx.state === 'suspended') this.ctx.resume();
         this.isPlayingBGM = true;
 
@@ -97,7 +105,7 @@ export default class SoundManager {
         else { bassNotes = [55, 55, 65, 65]; synthNotes = [440, 523, 587, 659]; }
 
         const schedule = () => {
-            if (!this.isPlayingBGM) return;
+            if (!this.isPlayingBGM || !this.ctx) return;
             while (nextNoteTime < this.ctx.currentTime + 0.1) {
                 if (beatCount % 2 === 0) this.playKick(nextNoteTime);
                 if (beatCount % 2 === 1) {

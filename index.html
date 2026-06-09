@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>パッチワーク・ワールドの修復師</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+<body>
+    <div id="game-container"></div>
+    <div id="ui-layer">
+        <div id="top-ui">
+            <div class="gauge-bar hp-bar">HP: ||||||||||</div>
+            <div class="gauge-bar energy-bar">AMMO: |||||||||| / ATAS: 100%</div>
+        </div>
+        <div id="left-controls">
+            <button class="d-pad" id="btn-left">◀</button>
+            <button class="d-pad" id="btn-down">▼</button>
+            <button class="d-pad" id="btn-right">▶</button>
+        </div>
+        <div id="right-controls">
+            <button class="action-btn" id="btn-dash">Dash</button>
+            <button class="action-btn" id="btn-jump">Jump</button>
+            <button class="action-btn" id="btn-attack">Shot</button>
+        </div>
+        <div id="atas-display">
+            <span class="atas-label">ATAS LOGIC:</span>
+            <span id="atas-timing">-</span> ＋ <span id="atas-attribute">-</span> ＋ <span id="atas-action">-</span>
+        </div>
+        <div id="nav-window">
+            <p id="nav-text">ナビゲーター：システム起動。</p>
+        </div>
+    </div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

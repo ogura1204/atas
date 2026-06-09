@@ -15,22 +15,18 @@ export default class LabScene extends Phaser.Scene {
 
         if(window.SM) window.SM.stopBGM();
 
-        // ★フルHD（1280x720）の中心座標に合わせて背景を配置
         this.add.image(640, 360, 'lab_bg');
         
         this.platforms = this.physics.add.staticGroup();
-        // ★床を画面下部に配置し、横幅を広げる（setScale）
         this.platforms.create(640, 700, 'ground').setScale(2).refreshBody();
 
         this.add.text(30, 30, '【 物理工房 - ラボ - 】', { fontSize: '28px', fill: '#00ffff' });
 
         this.initATASData();
 
-        // ★文字サイズを大きくし、見やすい位置へ移動
         this.equipDisplay = this.add.text(640, 80, "", { fontSize: '20px', fill: '#aaa', align: 'center' }).setOrigin(0.5);
         this.updateEquipDisplay();
 
-        // ★フルHD画面に合わせて、オブジェクトの配置間隔を広く美しく並べる
         this.facilities = this.physics.add.staticGroup();
         let monitor = this.facilities.create(200, 580, 'obj_monitor'); monitor.facilityType = 'stage';
         let boots = this.facilities.create(450, 600, 'obj_boots'); boots.facilityType = 'boots';
@@ -39,15 +35,22 @@ export default class LabScene extends Phaser.Scene {
         let server = this.facilities.create(1100, 560, 'obj_server'); server.facilityType = 'save';
         let navBit = this.facilities.create(1200, 450, 'obj_nav'); navBit.facilityType = 'nav';
         
-        // ★プレイヤーを床の上（安全な位置）にスポーンさせる
         this.player = new Player(this, 640, 500);
         this.player.inLab = true;
         this.physics.add.collider(this.player, this.platforms);
 
-        this.promptText = this.add.text(640, 150, 'Shot (Xキー) でアクセス', { fontSize: '22px', fill: '#ffff00', fontStyle: 'bold' }).setOrigin(0.5);
+        this.promptText = this.add.text(640, 150, 'Xキーでアクセス', { fontSize: '22px', fill: '#ffff00', fontStyle: 'bold' }).setOrigin(0.5);
         this.promptText.setVisible(false);
         this.currentTarget = null;
+        
+        // ★キーボードUI用の管理変数
         this.activeMenu = null;
+        this.menuButtons = [];
+        this.selectedIndex = 0;
+        
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.keyX = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+        this.keyZ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z); // キャンセルキー
 
         this.events.on('interact', this.handleInteract, this);
     }
@@ -83,7 +86,38 @@ export default class LabScene extends Phaser.Scene {
                 }
             });
             if (!isOverlapping) { this.currentTarget = null; this.promptText.setVisible(false); }
+        } else if (this.activeMenu && this.menuButtons.length > 0) {
+            // ★ キーボードによるメニュー選択ロジック
+            if (Phaser.Input.Keyboard.JustDown(this.cursors.up)) {
+                this.selectedIndex = (this.selectedIndex - 1 + this.menuButtons.length) % this.menuButtons.length;
+                this.updateMenuHighlight();
+                if(window.SM) window.SM.playRapid(); // カーソル移動音
+            }
+            if (Phaser.Input.Keyboard.JustDown(this.cursors.down)) {
+                this.selectedIndex = (this.selectedIndex + 1) % this.menuButtons.length;
+                this.updateMenuHighlight();
+                if(window.SM) window.SM.playRapid();
+            }
+            if (Phaser.Input.Keyboard.JustDown(this.keyX)) {
+                this.menuButtons[this.selectedIndex].callback();
+                if(window.SM) window.SM.playJump(); // 決定音
+            }
+            if (Phaser.Input.Keyboard.JustDown(this.keyZ)) {
+                this.closeMenu();
+            }
         }
+    }
+
+    updateMenuHighlight() {
+        this.menuButtons.forEach((btn, i) => {
+            if (i === this.selectedIndex) {
+                btn.bg.setFillStyle(0x00ffff); // 選択中ハイライト（シアン）
+                btn.text.setFill('#000');
+            } else {
+                btn.bg.setFillStyle(btn.defaultColor); // 元の色
+                btn.text.setFill('#fff');
+            }
+        });
     }
 
     handleInteract() {
@@ -103,26 +137,39 @@ export default class LabScene extends Phaser.Scene {
 
     createMenuBase(title) {
         this.activeMenu = this.add.group();
-        // ★メニューウィンドウもフルHDに合わせて巨大化
+        this.menuButtons = [];
+        this.selectedIndex = 0;
+        
         let bg = this.add.rectangle(640, 360, 800, 500, 0x000000, 0.9).setStrokeStyle(3, 0x00ffff);
         let titleText = this.add.text(640, 150, title, { fontSize: '32px', fill: '#00ffff' }).setOrigin(0.5);
-        this.activeMenu.add(bg); this.activeMenu.add(titleText);
+        let helpText = this.add.text(640, 580, "十字キー：選択 / Xキー：決定 / Zキー：閉じる", { fontSize: '16px', fill: '#aaaaaa' }).setOrigin(0.5);
         
-        this.createMenuButton(640, 550, "閉じる (CLOSE)", () => {
+        this.activeMenu.add(bg); this.activeMenu.add(titleText); this.activeMenu.add(helpText);
+    }
+
+    closeMenu() {
+        if (this.activeMenu) {
             this.activeMenu.destroy(true);
+            this.activeMenu = null;
+            this.menuButtons = [];
             this.updateEquipDisplay();
-            this.player.isLocked = false;
-            this.time.delayedCall(100, () => { this.currentTarget = null; });
-        }, 0x555555);
+            this.time.delayedCall(100, () => { 
+                this.player.isLocked = false; 
+                this.currentTarget = null; 
+            });
+        }
     }
 
     createMenuButton(x, y, text, callback, color = 0x336699) {
         let btnBg = this.add.rectangle(x, y, 600, 50, color).setInteractive();
         let btnText = this.add.text(x, y, text, { fontSize: '22px', fill: '#fff' }).setOrigin(0.5);
-        btnBg.on('pointerdown', () => {
-            btnBg.setFillStyle(0x6699cc);
-            this.time.delayedCall(100, () => callback());
-        });
+        
+        // 配列に保存（キーボード操作用）
+        this.menuButtons.push({ bg: btnBg, text: btnText, callback: callback, defaultColor: color });
+        
+        // マウス操作も一応残しておく
+        btnBg.on('pointerdown', () => { callback(); });
+        
         this.activeMenu.add(btnBg); this.activeMenu.add(btnText);
     }
 
@@ -147,28 +194,32 @@ export default class LabScene extends Phaser.Scene {
                 this.player.eqAction = this.registry.get('eq_action');
                 this.player.updateATASUI();
 
-                this.activeMenu.destroy(true);
+                this.closeMenu();
                 this.openCustomizeMenu(partName, eqKey, invKey, masterData);
             }, btnColor);
         });
+        this.updateMenuHighlight();
     }
 
     openStageMenu() {
         this.createMenuBase("【 メインゲート - 出撃 - 】");
         let cleared = this.registry.get('clearedStages') || [];
-        let s1Text = cleared.includes(1) ? "STAGE 1: 表層インフラ [CLEAR]" : "STAGE 1: 表層インフラ";
-        this.createMenuButton(640, 240, s1Text, () => this.scene.start('Stage1'), cleared.includes(1) ? 0x555555 : 0x336699);
-        let s2Text = cleared.includes(2) ? "STAGE 2: 交通管制ターミナル [CLEAR]" : "STAGE 2: 交通管制ターミナル";
-        this.createMenuButton(640, 310, s2Text, () => this.scene.start('Stage2'), cleared.includes(2) ? 0x555555 : 0x336699);
-        let s3Text = cleared.includes(3) ? "STAGE 3: 廃棄物処理プラント [CLEAR]" : "STAGE 3: 廃棄物処理プラント";
-        this.createMenuButton(640, 380, s3Text, () => this.scene.start('Stage3'), cleared.includes(3) ? 0x555555 : 0x336699);
+        
+        this.createMenuButton(640, 240, cleared.includes(1) ? "STAGE 1: 表層インフラ [CLEAR]" : "STAGE 1: 表層インフラ", 
+            () => this.scene.start('Stage1'), cleared.includes(1) ? 0x555555 : 0x336699);
+            
+        this.createMenuButton(640, 310, cleared.includes(2) ? "STAGE 2: 交通管制ターミナル [CLEAR]" : "STAGE 2: 交通管制ターミナル", 
+            () => this.scene.start('Stage2'), cleared.includes(2) ? 0x555555 : 0x336699);
+            
+        this.createMenuButton(640, 380, cleared.includes(3) ? "STAGE 3: 廃棄物処理プラント [CLEAR]" : "STAGE 3: 廃棄物処理プラント", 
+            () => this.scene.start('Stage3'), cleared.includes(3) ? 0x555555 : 0x336699);
 
         if (cleared.includes(1) && cleared.includes(2) && cleared.includes(3)) {
             this.createMenuButton(640, 450, "STAGE 4: 中枢ネットワーク [未実装]", () => { this.player.showNavMessage("開発中です。"); }, 0x993300);
         } else {
-            let lockText = this.add.text(640, 450, "--- 第2階層：未解禁 ---", { fontSize: '20px', fill: '#555' }).setOrigin(0.5);
-            this.activeMenu.add(lockText);
+            this.createMenuButton(640, 450, "--- 第2階層：未解禁 ---", () => { this.player.showNavMessage("上の階層を全てクリアしてください。"); }, 0x333333);
         }
+        this.updateMenuHighlight();
     }
 
     openSaveMenu() {
@@ -182,9 +233,9 @@ export default class LabScene extends Phaser.Scene {
             };
             localStorage.setItem('patchwork_save', JSON.stringify(saveData));
             this.player.showNavMessage("ローカルストレージへの記録が完了しました。");
-            let flash = this.add.rectangle(640, 360, 1280, 720, 0xffffff, 0.3);
-            this.tweens.add({ targets: flash, alpha: 0, duration: 300, onComplete: () => flash.destroy() });
+            this.closeMenu();
         }, 0x993333);
+        this.updateMenuHighlight();
     }
 
     openNavMenu() {
@@ -192,10 +243,11 @@ export default class LabScene extends Phaser.Scene {
         const dialogues = [
             "ナビ：ブーツ、ハンドガン、バイクの各シンボルから、抽出したコードを組み替えることができます。",
             "ナビ：組み合わせ次第で、生存率が劇的に変化します。色々と試してみてください。",
-            "ナビ：装備を変更した後は、必ず右端のサーバーでセーブを行ってください。"
+            "ナビ：Zキーでメニューをキャンセル（閉じる）ことができます。"
         ];
         let randomText = dialogues[Math.floor(Math.random() * dialogues.length)];
-        let chatText = this.add.text(640, 320, randomText, { fontSize: '22px', fill: '#fff', align: 'center', wordWrap: { width: 600 } }).setOrigin(0.5);
-        this.activeMenu.add(chatText);
+        this.add.text(640, 320, randomText, { fontSize: '22px', fill: '#fff', align: 'center', wordWrap: { width: 600 } }).setOrigin(0.5);
+        this.createMenuButton(640, 450, "了解", () => { this.closeMenu(); }, 0x336699);
+        this.updateMenuHighlight();
     }
 }

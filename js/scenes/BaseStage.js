@@ -128,14 +128,13 @@ export default class BaseStage extends Phaser.Scene {
         this.currentDialogues = dialogues;
         this.dialogueIndex = 0;
 
-        // ★フルHD画面の中央下部に会話ウィンドウを「画面固定」で表示
+        // フルHD画面の中央下部に会話ウィンドウを「画面固定」で表示
         this.dialogueBg = this.add.graphics().setScrollFactor(0);
         this.dialogueBg.fillStyle(0x000000, 0.8).lineStyle(2, 0x00ffff);
         this.dialogueBg.fillRect(240, 550, 800, 100).strokeRect(240, 550, 800, 100);
         
         this.dialogueText = this.add.text(280, 580, this.currentDialogues[0], { fontSize: '20px', fill: '#fff' }).setScrollFactor(0);
         
-        // ★Xキー（Shotボタン）でも会話を送れるように追加
         this.input.on('pointerdown', this.advanceDialogue, this);
         this.input.keyboard.on('keydown-SPACE', this.advanceDialogue, this);
         this.input.keyboard.on('keydown-ENTER', this.advanceDialogue, this);

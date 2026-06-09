@@ -10,35 +10,41 @@ export default class LabScene extends Phaser.Scene {
     constructor() { super('LabScene'); }
 
     create() {
-        // ★UIレイヤーを再び表示させる
         const uiLayer = document.getElementById('ui-layer');
         if (uiLayer) uiLayer.style.display = 'block';
 
         if(window.SM) window.SM.stopBGM();
 
-        this.add.image(400, 225, 'lab_bg');
+        // ★フルHD（1280x720）の中心座標に合わせて背景を配置
+        this.add.image(640, 360, 'lab_bg');
+        
         this.platforms = this.physics.add.staticGroup();
-        this.platforms.create(400, 425, 'ground');
-        this.add.text(20, 20, '【 物理工房 - ラボ - 】', { fontSize: '20px', fill: '#00ffff' });
+        // ★床を画面下部に配置し、横幅を広げる（setScale）
+        this.platforms.create(640, 700, 'ground').setScale(2).refreshBody();
+
+        this.add.text(30, 30, '【 物理工房 - ラボ - 】', { fontSize: '28px', fill: '#00ffff' });
 
         this.initATASData();
 
-        this.equipDisplay = this.add.text(400, 60, "", { fontSize: '14px', fill: '#aaa', align: 'center' }).setOrigin(0.5);
+        // ★文字サイズを大きくし、見やすい位置へ移動
+        this.equipDisplay = this.add.text(640, 80, "", { fontSize: '20px', fill: '#aaa', align: 'center' }).setOrigin(0.5);
         this.updateEquipDisplay();
 
+        // ★フルHD画面に合わせて、オブジェクトの配置間隔を広く美しく並べる
         this.facilities = this.physics.add.staticGroup();
-        let monitor = this.facilities.create(100, 350, 'obj_monitor'); monitor.facilityType = 'stage';
-        let boots = this.facilities.create(250, 375, 'obj_boots'); boots.facilityType = 'boots';
-        let handgun = this.facilities.create(400, 385, 'obj_handgun'); handgun.facilityType = 'handgun';
-        let bike = this.facilities.create(550, 375, 'obj_bike_disp'); bike.facilityType = 'bike';
-        let server = this.facilities.create(720, 340, 'obj_server'); server.facilityType = 'save';
-        let navBit = this.facilities.create(750, 200, 'obj_nav'); navBit.facilityType = 'nav';
+        let monitor = this.facilities.create(200, 580, 'obj_monitor'); monitor.facilityType = 'stage';
+        let boots = this.facilities.create(450, 600, 'obj_boots'); boots.facilityType = 'boots';
+        let handgun = this.facilities.create(650, 620, 'obj_handgun'); handgun.facilityType = 'handgun';
+        let bike = this.facilities.create(850, 600, 'obj_bike_disp'); bike.facilityType = 'bike';
+        let server = this.facilities.create(1100, 560, 'obj_server'); server.facilityType = 'save';
+        let navBit = this.facilities.create(1200, 450, 'obj_nav'); navBit.facilityType = 'nav';
         
-        this.player = new Player(this, 400, 350);
+        // ★プレイヤーを床の上（安全な位置）にスポーンさせる
+        this.player = new Player(this, 640, 500);
         this.player.inLab = true;
         this.physics.add.collider(this.player, this.platforms);
 
-        this.promptText = this.add.text(400, 150, 'Shot(Xキー)でアクセス', { fontSize: '18px', fill: '#ffff00', fontStyle: 'bold' }).setOrigin(0.5);
+        this.promptText = this.add.text(640, 150, 'Shot (Xキー) でアクセス', { fontSize: '22px', fill: '#ffff00', fontStyle: 'bold' }).setOrigin(0.5);
         this.promptText.setVisible(false);
         this.currentTarget = null;
         this.activeMenu = null;
@@ -71,7 +77,7 @@ export default class LabScene extends Phaser.Scene {
             this.facilities.getChildren().forEach(fac => {
                 if (Phaser.Geom.Intersects.RectangleToRectangle(this.player.getBounds(), fac.getBounds())) {
                     this.currentTarget = fac.facilityType;
-                    this.promptText.setPosition(fac.x, fac.y - 80);
+                    this.promptText.setPosition(fac.x, fac.y - 120);
                     this.promptText.setVisible(true);
                     isOverlapping = true;
                 }
@@ -97,11 +103,12 @@ export default class LabScene extends Phaser.Scene {
 
     createMenuBase(title) {
         this.activeMenu = this.add.group();
-        let bg = this.add.rectangle(400, 225, 650, 350, 0x000000, 0.9).setStrokeStyle(2, 0x00ffff);
-        let titleText = this.add.text(400, 80, title, { fontSize: '24px', fill: '#00ffff' }).setOrigin(0.5);
+        // ★メニューウィンドウもフルHDに合わせて巨大化
+        let bg = this.add.rectangle(640, 360, 800, 500, 0x000000, 0.9).setStrokeStyle(3, 0x00ffff);
+        let titleText = this.add.text(640, 150, title, { fontSize: '32px', fill: '#00ffff' }).setOrigin(0.5);
         this.activeMenu.add(bg); this.activeMenu.add(titleText);
         
-        this.createMenuButton(400, 370, "閉じる (CLOSE)", () => {
+        this.createMenuButton(640, 550, "閉じる (CLOSE)", () => {
             this.activeMenu.destroy(true);
             this.updateEquipDisplay();
             this.player.isLocked = false;
@@ -110,8 +117,8 @@ export default class LabScene extends Phaser.Scene {
     }
 
     createMenuButton(x, y, text, callback, color = 0x336699) {
-        let btnBg = this.add.rectangle(x, y, 500, 40, color).setInteractive();
-        let btnText = this.add.text(x, y, text, { fontSize: '16px', fill: '#fff' }).setOrigin(0.5);
+        let btnBg = this.add.rectangle(x, y, 600, 50, color).setInteractive();
+        let btnText = this.add.text(x, y, text, { fontSize: '22px', fill: '#fff' }).setOrigin(0.5);
         btnBg.on('pointerdown', () => {
             btnBg.setFillStyle(0x6699cc);
             this.time.delayedCall(100, () => callback());
@@ -124,14 +131,14 @@ export default class LabScene extends Phaser.Scene {
         let currentEquipId = this.registry.get(eqKey);
         let inventory = this.registry.get(invKey) || [];
 
-        let startY = 140;
+        let startY = 250;
         inventory.forEach((itemId, index) => {
             let itemName = masterData[itemId];
             let isEquipped = (itemId === currentEquipId);
             let btnText = isEquipped ? `[ 装備中 ] ${itemName}` : `[ 変更 ] ${itemName}`;
             let btnColor = isEquipped ? 0x008800 : 0x336699; 
 
-            this.createMenuButton(400, startY + (index * 50), btnText, () => {
+            this.createMenuButton(640, startY + (index * 70), btnText, () => {
                 this.registry.set(eqKey, itemId);
                 this.player.showNavMessage(`${partName}のコードを「${itemName}」に書き換えました。`);
                 
@@ -150,24 +157,24 @@ export default class LabScene extends Phaser.Scene {
         this.createMenuBase("【 メインゲート - 出撃 - 】");
         let cleared = this.registry.get('clearedStages') || [];
         let s1Text = cleared.includes(1) ? "STAGE 1: 表層インフラ [CLEAR]" : "STAGE 1: 表層インフラ";
-        this.createMenuButton(400, 140, s1Text, () => this.scene.start('Stage1'), cleared.includes(1) ? 0x555555 : 0x336699);
+        this.createMenuButton(640, 240, s1Text, () => this.scene.start('Stage1'), cleared.includes(1) ? 0x555555 : 0x336699);
         let s2Text = cleared.includes(2) ? "STAGE 2: 交通管制ターミナル [CLEAR]" : "STAGE 2: 交通管制ターミナル";
-        this.createMenuButton(400, 190, s2Text, () => this.scene.start('Stage2'), cleared.includes(2) ? 0x555555 : 0x336699);
+        this.createMenuButton(640, 310, s2Text, () => this.scene.start('Stage2'), cleared.includes(2) ? 0x555555 : 0x336699);
         let s3Text = cleared.includes(3) ? "STAGE 3: 廃棄物処理プラント [CLEAR]" : "STAGE 3: 廃棄物処理プラント";
-        this.createMenuButton(400, 240, s3Text, () => this.scene.start('Stage3'), cleared.includes(3) ? 0x555555 : 0x336699);
+        this.createMenuButton(640, 380, s3Text, () => this.scene.start('Stage3'), cleared.includes(3) ? 0x555555 : 0x336699);
 
         if (cleared.includes(1) && cleared.includes(2) && cleared.includes(3)) {
-            this.createMenuButton(400, 290, "STAGE 4: 中枢ネットワーク [未実装]", () => { this.player.showNavMessage("開発中です。"); }, 0x993300);
+            this.createMenuButton(640, 450, "STAGE 4: 中枢ネットワーク [未実装]", () => { this.player.showNavMessage("開発中です。"); }, 0x993300);
         } else {
-            let lockText = this.add.text(400, 290, "--- 第2階層：未解禁 ---", { fontSize: '16px', fill: '#555' }).setOrigin(0.5);
+            let lockText = this.add.text(640, 450, "--- 第2階層：未解禁 ---", { fontSize: '20px', fill: '#555' }).setOrigin(0.5);
             this.activeMenu.add(lockText);
         }
     }
 
     openSaveMenu() {
         this.createMenuBase("【 ローカルサーバー - 記録 - 】");
-        this.add.text(400, 180, "現在の進行とATAS構成を端末に記録しますか？", { fontSize: '16px', fill: '#fff' }).setOrigin(0.5);
-        this.createMenuButton(400, 240, "SYSTEM SAVE (実行)", () => {
+        this.add.text(640, 280, "現在の進行とATAS構成を端末に記録しますか？", { fontSize: '22px', fill: '#fff' }).setOrigin(0.5);
+        this.createMenuButton(640, 380, "SYSTEM SAVE (実行)", () => {
             const saveData = {
                 clearedStages: this.registry.get('clearedStages'),
                 eq_timing: this.registry.get('eq_timing'), eq_attribute: this.registry.get('eq_attribute'), eq_action: this.registry.get('eq_action'),
@@ -175,7 +182,7 @@ export default class LabScene extends Phaser.Scene {
             };
             localStorage.setItem('patchwork_save', JSON.stringify(saveData));
             this.player.showNavMessage("ローカルストレージへの記録が完了しました。");
-            let flash = this.add.rectangle(400, 225, 800, 450, 0xffffff, 0.3);
+            let flash = this.add.rectangle(640, 360, 1280, 720, 0xffffff, 0.3);
             this.tweens.add({ targets: flash, alpha: 0, duration: 300, onComplete: () => flash.destroy() });
         }, 0x993333);
     }
@@ -185,10 +192,10 @@ export default class LabScene extends Phaser.Scene {
         const dialogues = [
             "ナビ：ブーツ、ハンドガン、バイクの各シンボルから、抽出したコードを組み替えることができます。",
             "ナビ：組み合わせ次第で、生存率が劇的に変化します。色々と試してみてください。",
-            "ナビ：装備を変更した後は、必ず右奥のサーバーでセーブを行ってください。"
+            "ナビ：装備を変更した後は、必ず右端のサーバーでセーブを行ってください。"
         ];
         let randomText = dialogues[Math.floor(Math.random() * dialogues.length)];
-        let chatText = this.add.text(400, 200, randomText, { fontSize: '16px', fill: '#fff', align: 'center', wordWrap: { width: 450 } }).setOrigin(0.5);
+        let chatText = this.add.text(640, 320, randomText, { fontSize: '22px', fill: '#fff', align: 'center', wordWrap: { width: 600 } }).setOrigin(0.5);
         this.activeMenu.add(chatText);
     }
 }

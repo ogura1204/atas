@@ -10,6 +10,9 @@ export default class LabScene extends Phaser.Scene {
     constructor() { super('LabScene'); }
 
     create() {
+        // ★UIレイヤーを再び表示させる
+        document.getElementById('ui-layer').style.display = 'block';
+
         if(window.SM) window.SM.stopBGM();
 
         this.add.image(400, 225, 'lab_bg');

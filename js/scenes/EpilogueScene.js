@@ -9,7 +9,8 @@ export default class EpilogueScene extends Phaser.Scene {
 
     create() {
         // ★UIレイヤーを非表示にする
-        document.getElementById('ui-layer').style.display = 'none';
+        const uiLayer = document.getElementById('ui-layer');
+        if (uiLayer) uiLayer.style.display = 'none';
 
         this.cameras.main.setBackgroundColor('#001122');
         
@@ -34,8 +35,11 @@ export default class EpilogueScene extends Phaser.Scene {
 
         const advance = () => {
             this.currentIndex++;
-            if (this.currentIndex < this.texts.length) { this.messageText.setText(this.texts[this.currentIndex]); } 
-            else { this.scene.start('LabScene'); }
+            if (this.currentIndex < this.texts.length) { 
+                this.messageText.setText(this.texts[this.currentIndex]); 
+            } else { 
+                this.scene.start('LabScene'); 
+            }
         };
 
         this.input.on('pointerdown', advance);

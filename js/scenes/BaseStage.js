@@ -5,6 +5,9 @@ export default class BaseStage extends Phaser.Scene {
     constructor(key) { super(key); }
 
     setupStage(config) {
+        // ★UIレイヤーを表示させる
+        document.getElementById('ui-layer').style.display = 'block';
+
         window.SM.playStageBGM(config.epilogueData.stageId);
 
         this.add.image(400, 225, config.bgKey);

@@ -1,4 +1,4 @@
-import './utils/SoundManager.js'; // ★ 音声プログラムを起動
+import './utils/SoundManager.js';
 import BootScene from './scenes/BootScene.js';
 import TitleScene from './scenes/TitleScene.js';
 import PrologueScene from './scenes/PrologueScene.js';
@@ -11,10 +11,23 @@ import EpilogueScene from './scenes/EpilogueScene.js';
 const config = {
     type: Phaser.AUTO,
     parent: 'game-container',
-    width: 800,
-    height: 450,
-    physics: { default: 'arcade', arcade: { gravity: { y: 800 }, debug: false } },
-    scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+    width: 1280,  // ★内部解像度をフルHD水準に引き上げ（高画質化）
+    height: 720,
+    physics: { 
+        default: 'arcade', 
+        arcade: { 
+            gravity: { y: 2500 }, // ★重力を従来の3倍にして「重み」を表現
+            debug: false 
+        } 
+    },
+    render: {
+        antialias: true,       // ★画像のフチを滑らかにする高画質設定
+        pixelArt: false        // ドット絵ではなく高解像度イラスト用にする
+    },
+    scale: { 
+        mode: Phaser.Scale.FIT, 
+        autoCenter: Phaser.Scale.CENTER_BOTH 
+    },
     scene: [BootScene, TitleScene, PrologueScene, LabScene, Stage1, Stage2, Stage3, EpilogueScene]
 };
 const game = new Phaser.Game(config);

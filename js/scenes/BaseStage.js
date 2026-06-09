@@ -1,3 +1,4 @@
+// === この行からコピーを開始してください ===
 import Player from '../classes/Player.js';
 import Enemy from '../classes/Enemy.js';
 
@@ -171,3 +172,4 @@ export default class BaseStage extends Phaser.Scene {
         if (this.bgMid) this.bgMid.tilePositionX = this.cameras.main.scrollX * 0.4;
     }
 }
+// === 最後の行（この行まで確実にコピーしてください） ===

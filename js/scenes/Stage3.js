@@ -1,41 +1,40 @@
 import BaseStage from './BaseStage.js';
 
-export default class Stage3 extends BaseStage {
-    constructor() { super('Stage3'); }
+export default class Stage2 extends BaseStage {
+    constructor() { super('Stage2'); }
 
     create() {
         let groundData = [];
-        for (let i = 0; i < 15; i++) {
-            groundData.push({ x: 400 + (i * 600), y: 700, key: 'ground', scale: 1 });
-            // ★ ダメージを受けるトゲ（hazard）を配置
-            groundData.push({ x: 700 + (i * 600), y: 680, key: 'hazard', scale: 1 });
-            groundData.push({ x: 700 + (i * 600), y: 500, key: 'platform', scale: 0.5 });
+        // アスレチックのように途切れた足場（落下注意）
+        for (let i = 0; i < 12; i++) {
+            groundData.push({ x: 400 + (i * 700), y: 700, key: 'ground', scale: 0.8 });
+            groundData.push({ x: 750 + (i * 700), y: 500, key: 'platform', scale: 0.5 });
         }
 
         let enemyData = [];
-        for (let i = 1; i < 20; i++) {
-            // shooter（遠距離から弾を撃ってくる敵）を配置
-            enemyData.push({ x: 400 * i, y: 600, key: 'enemy_base', hp: 5, speed: 80, type: 'shooter' });
+        for (let i = 1; i < 15; i++) {
+            // flyer（空飛ぶ敵）を配置
+            enemyData.push({ x: 500 * i, y: 300, key: 'enemy_base', hp: 3, speed: 150, type: 'flyer' });
         }
 
         this.setupStage({
             stageWidth: 8000, 
-            bgBack: 'bg3_back', 
-            bgMid: 'bg3_mid',
-            title: 'STAGE 3: 廃棄物処理プラント (重力異常区画)',
+            bgBack: 'bg2_back', 
+            bgMid: 'bg2_mid',
+            title: 'STAGE 2: 交通管制ターミナル (空中回廊)',
             platformsData: groundData,
             enemiesData: enemyData,
             
-            // ★ 超大型ボス（boss3）。動かず大量の弾を乱射する
-            bossData: { x: 7600, y: 400, key: 'boss3', hp: 800, speed: 0, type: 'boss3' },
-            triggerX: 6500,
+            // 人型ボス（boss2）。速い動きでダッシュ攻撃をしてくる
+            bossData: { x: 7500, y: 600, key: 'boss2', hp: 300, speed: 450, type: 'boss2' },
+            triggerX: 6800,
             
             dialogues: [
-                "ナビ：周囲の重力場に異常な偏りを確認。",
-                "ナビ：超巨大廃棄物圧縮機「グラビティ・コンパクター」です。",
-                "ナビ：弾幕が濃いです。ATASの「シールド展開」を活用して防いでください！"
+                "ナビ：管制ターミナルの異常な過負荷（サージ）を検知。",
+                "ナビ：人型高機動システム「サージ・トラフィッカー」です。",
+                "ナビ：非常に素早いです。ダッシュ回避（Cキー/Shiftキー）を駆使して背後を取りましょう。"
             ],
-            epilogueData: { stageId: 3, bossName: "グラビティ・コンパクター", reward: "【属性パーツ：重力】" }
+            epilogueData: { stageId: 2, bossName: "サージ・トラフィッカー", reward: "【タイミング：ヘビー発射時 / 行動：属性弾発射】" }
         });
     }
 }
